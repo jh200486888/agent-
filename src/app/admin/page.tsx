@@ -214,6 +214,18 @@ function ModelsPanel() {
     await fetchModels();
   };
 
+  const handleToggleEnabled = async (model: ModelConfig) => {
+    await fetch('/api/models', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...model,
+        is_enabled: !model.is_enabled,
+      }),
+    });
+    await fetchModels();
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -305,12 +317,24 @@ function ModelsPanel() {
               <div className="text-sm text-muted-foreground mt-1">{model.model_id}</div>
               {model.description && <div className="text-xs text-muted-foreground mt-1">{model.description}</div>}
             </div>
-            <button
-              onClick={() => handleDelete(model.id)}
-              className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-            >
-              <Trash2 size={16} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handleToggleEnabled(model)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  model.is_enabled
+                    ? 'bg-green-500/10 text-green-500 hover:bg-green-500/20'
+                    : 'bg-red-500/10 text-red-500 hover:bg-red-500/20'
+                }`}
+              >
+                {model.is_enabled ? 'Disable' : 'Enable'}
+              </button>
+              <button
+                onClick={() => handleDelete(model.id)}
+                className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
           </div>
         ))}
       </div>

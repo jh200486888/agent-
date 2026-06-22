@@ -188,14 +188,76 @@ export async function deleteApiKey(id: string): Promise<void> {
 // ============ Seed default models ============
 
 const DEFAULT_MODELS = [
-  { model_id: 'doubao-seed-2-0-pro-260215', display_name: 'Doubao Seed 2.0 Pro', provider: 'coze', description: 'Flagship multimodal model for complex reasoning', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 1 },
-  { model_id: 'doubao-seed-2-0-lite-260215', display_name: 'Doubao Seed 2.0 Lite', provider: 'coze', description: 'Balanced performance and cost', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 2 },
-  { model_id: 'doubao-seed-2-0-mini-260215', display_name: 'Doubao Seed 2.0 Mini', provider: 'coze', description: 'Low latency, high throughput', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 3 },
-  { model_id: 'deepseek-v3-2-251201', display_name: 'DeepSeek V3.2', provider: 'coze', description: 'Balanced reasoning and output length', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 4 },
-  { model_id: 'kimi-k2-5-260127', display_name: 'Kimi K2.5', provider: 'coze', description: 'Most capable Kimi model with native multimodal', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 5 },
-  { model_id: 'glm-5-0-260211', display_name: 'GLM 5.0', provider: 'coze', description: 'Zhipu flagship for agentic engineering', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 6 },
-  { model_id: 'minimax-m2-5-260212', display_name: 'MiniMax M2.5', provider: 'coze', description: 'SOTA in coding and agent tasks', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 7 },
-  { model_id: 'qwen-3-5-plus-260215', display_name: 'Qwen 3.5 Plus', provider: 'coze', description: 'Native vision-language model', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 8 },
+  // ============ 国内大模型 ============
+  // 字节跳动 - 豆包
+  { model_id: 'doubao-seed-2-0-pro-260215', display_name: '豆包 Seed 2.0 Pro', provider: 'doubao', description: '旗舰多模态模型，复杂推理能力强', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 1 },
+  { model_id: 'doubao-seed-2-0-lite-260215', display_name: '豆包 Seed 2.0 Lite', provider: 'doubao', description: '性能与成本均衡', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 2 },
+  { model_id: 'doubao-seed-2-0-mini-260215', display_name: '豆包 Seed 2.0 Mini', provider: 'doubao', description: '低延迟，高吞吐', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 3 },
+  
+  // 深度求索 - DeepSeek
+  { model_id: 'deepseek-chat', display_name: 'DeepSeek Chat', provider: 'deepseek', description: '通用对话模型', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 4 },
+  { model_id: 'deepseek-coder', display_name: 'DeepSeek Coder', provider: 'deepseek', description: '代码生成专用模型', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 5 },
+  { model_id: 'deepseek-reasoner', display_name: 'DeepSeek Reasoner', provider: 'deepseek', description: '深度推理模型', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 6 },
+  
+  // 月之暗面 - Kimi
+  { model_id: 'moonshot-v1-8k', display_name: 'Kimi 8K', provider: 'kimi', description: '8K上下文窗口', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 7 },
+  { model_id: 'moonshot-v1-32k', display_name: 'Kimi 32K', provider: 'kimi', description: '32K上下文窗口', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 8 },
+  { model_id: 'moonshot-v1-128k', display_name: 'Kimi 128K', provider: 'kimi', description: '128K超长上下文', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 9 },
+  
+  // 智谱 - GLM
+  { model_id: 'glm-4', display_name: 'GLM-4', provider: 'zhipu', description: '智谱旗舰模型', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 10 },
+  { model_id: 'glm-4-air', display_name: 'GLM-4-Air', provider: 'zhipu', description: '高性价比版本', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 11 },
+  { model_id: 'glm-4-flash', display_name: 'GLM-4-Flash', provider: 'zhipu', description: '快速响应版本', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 12 },
+  
+  // 通义千问 - Qwen
+  { model_id: 'qwen-turbo', display_name: '通义千问 Turbo', provider: 'qwen', description: '快速响应', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 13 },
+  { model_id: 'qwen-plus', display_name: '通义千问 Plus', provider: 'qwen', description: '性能均衡', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 14 },
+  { model_id: 'qwen-max', display_name: '通义千问 Max', provider: 'qwen', description: '旗舰模型', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 15 },
+  
+  // 百度 - 文心一言
+  { model_id: 'ernie-bot-4', display_name: '文心一言 4.0', provider: 'baidu', description: '百度旗舰模型', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 16 },
+  { model_id: 'ernie-bot-3.5', display_name: '文心一言 3.5', provider: 'baidu', description: '稳定版本', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 17 },
+  
+  // 讯飞 - 星火
+  { model_id: 'spark-v3.5', display_name: '讯飞星火 3.5', provider: 'spark', description: '讯飞旗舰模型', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 18 },
+  { model_id: 'spark-v3.0', display_name: '讯飞星火 3.0', provider: 'spark', description: '稳定版本', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 19 },
+  
+  // MiniMax
+  { model_id: 'abab6.5s-chat', display_name: 'MiniMax ABAB 6.5S', provider: 'minimax', description: '旗舰对话模型', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 20 },
+  
+  // 零一万物 - Yi
+  { model_id: 'yi-large', display_name: 'Yi-Large', provider: 'yi', description: '零一万物旗舰模型', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 21 },
+  { model_id: 'yi-medium', display_name: 'Yi-Medium', provider: 'yi', description: '均衡版本', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 22 },
+  
+  // ============ 国外大模型 ============
+  // OpenAI
+  { model_id: 'gpt-4o', display_name: 'GPT-4o', provider: 'openai', description: 'OpenAI 最新旗舰模型', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 30 },
+  { model_id: 'gpt-4o-mini', display_name: 'GPT-4o Mini', provider: 'openai', description: '高性价比版本', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 31 },
+  { model_id: 'gpt-4-turbo', display_name: 'GPT-4 Turbo', provider: 'openai', description: 'GPT-4 增强版', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 32 },
+  { model_id: 'gpt-3.5-turbo', display_name: 'GPT-3.5 Turbo', provider: 'openai', description: '经典模型，性价比高', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 33 },
+  
+  // Anthropic - Claude
+  { model_id: 'claude-4-opus', display_name: 'Claude 4 Opus', provider: 'anthropic', description: 'Anthropic 最强模型', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 40 },
+  { model_id: 'claude-4-sonnet', display_name: 'Claude 4 Sonnet', provider: 'anthropic', description: '性能均衡', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 41 },
+  { model_id: 'claude-3-5-sonnet', display_name: 'Claude 3.5 Sonnet', provider: 'anthropic', description: '上一代旗舰', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 42 },
+  { model_id: 'claude-3-haiku', display_name: 'Claude 3 Haiku', provider: 'anthropic', description: '快速响应版本', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 43 },
+  
+  // Google - Gemini
+  { model_id: 'gemini-2.5-pro', display_name: 'Gemini 2.5 Pro', provider: 'google', description: 'Google 最新旗舰', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 50 },
+  { model_id: 'gemini-2.0-flash', display_name: 'Gemini 2.0 Flash', provider: 'google', description: '快速响应版本', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 51 },
+  { model_id: 'gemini-1.5-pro', display_name: 'Gemini 1.5 Pro', provider: 'google', description: '1.5代旗舰', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 52 },
+  
+  // Meta - Llama
+  { model_id: 'llama-3.1-405b', display_name: 'Llama 3.1 405B', provider: 'meta', description: 'Meta 最大开源模型', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 60 },
+  { model_id: 'llama-3.1-70b', display_name: 'Llama 3.1 70B', provider: 'meta', description: '性能均衡', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 61 },
+  
+  // Mistral
+  { model_id: 'mistral-large', display_name: 'Mistral Large', provider: 'mistral', description: 'Mistral 旗舰模型', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 70 },
+  { model_id: 'mistral-small', display_name: 'Mistral Small', provider: 'mistral', description: '轻量版本', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 71 },
+  
+  // Cohere
+  { model_id: 'command-r-plus', display_name: 'Command R+', provider: 'cohere', description: 'Cohere 旗舰模型', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 80 },
+  { model_id: 'command-r', display_name: 'Command R', provider: 'cohere', description: 'RAG优化版本', is_enabled: 1, default_temperature: '0.7', default_max_tokens: 4096, sort_order: 81 },
 ];
 
 export async function seedDefaultModels(): Promise<void> {
