@@ -1,0 +1,417 @@
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import { ArrowLeft, Key, Settings, MessageSquare, Plus, Trash2, Save, RefreshCw } from 'lucide-react';
+import Link from 'next/link';
+import { useTheme } from '@/components/theme-provider';
+import type { ModelConfig, ApiKey, Conversation } from '@/lib/types';
+
+type Tab = 'keys' | 'models' | 'conversations';
+
+export default function AdminPage() {
+  const { theme, setTheme } = useTheme();
+  const [activeTab, setActiveTab] = useState<Tab>('models');
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b border-border bg-card">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link href="/" className="p-2 rounded-lg hover:bg-accent transition-colors">
+              <ArrowLeft size={20} />
+            </Link>
+            <h1 className="text-xl font-bold">Admin Panel</h1>
+          </div>
+          <button
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="p-2 rounded-lg hover:bg-accent transition-colors"
+          >
+            {theme === 'dark' ? 'Light' : 'Dark'}
+          </button>
+        </div>
+      </header>
+
+      {/* Tabs */}
+      <div className="max-w-6xl mx-auto px-4 py-6">
+        <div className="flex gap-2 mb-6 border-b border-border pb-4">
+          <TabButton icon={<Key size={16} />} label="API Keys" active={activeTab === 'keys'} onClick={() => setActiveTab('keys')} />
+          <TabButton icon={<Settings size={16} />} label="Models" active={activeTab === 'models'} onClick={() => setActiveTab('models')} />
+          <TabButton icon={<MessageSquare size={16} />} label="Conversations" active={activeTab === 'conversations'} onClick={() => setActiveTab('conversations')} />
+        </div>
+
+        {activeTab === 'keys' && <ApiKeysPanel />}
+        {activeTab === 'models' && <ModelsPanel />}
+        {activeTab === 'conversations' && <ConversationsPanel />}
+      </div>
+    </div>
+  );
+}
+
+function TabButton({ icon, label, active, onClick }: { icon: React.ReactNode; label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+        active ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+      }`}
+    >
+      {icon}
+      {label}
+    </button>
+  );
+}
+
+// ============ API Keys Panel ============
+function ApiKeysPanel() {
+  const [keys, setKeys] = useState<ApiKey[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ provider: '', provider_name: '', api_key: '', base_url: '' });
+  const [loading, setLoading] = useState(false);
+
+  const fetchKeys = useCallback(async () => {
+    const res = await fetch('/api/admin/keys');
+    const data = await res.json();
+    if (data.data) setKeys(data.data);
+  }, []);
+
+  useEffect(() => { fetchKeys(); }, [fetchKeys]);
+
+  const handleSubmit = async () => {
+    if (!form.provider || !form.provider_name || !form.api_key) return;
+    setLoading(true);
+    try {
+      await fetch('/api/admin/keys', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      setForm({ provider: '', provider_name: '', api_key: '', base_url: '' });
+      setShowForm(false);
+      await fetchKeys();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    await fetch(`/api/admin/keys?id=${id}`, { method: 'DELETE' });
+    await fetchKeys();
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold">API Key Management</h2>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm hover:bg-primary/90"
+        >
+          <Plus size={14} /> Add Key
+        </button>
+      </div>
+
+      {showForm && (
+        <div className="bg-card border border-border rounded-xl p-4 mb-4 space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <input
+              placeholder="Provider ID (e.g. openai)"
+              value={form.provider}
+              onChange={(e) => setForm({ ...form, provider: e.target.value })}
+              className="px-3 py-2 rounded-lg bg-background border border-border text-sm outline-none focus:border-primary"
+            />
+            <input
+              placeholder="Provider Name (e.g. OpenAI)"
+              value={form.provider_name}
+              onChange={(e) => setForm({ ...form, provider_name: e.target.value })}
+              className="px-3 py-2 rounded-lg bg-background border border-border text-sm outline-none focus:border-primary"
+            />
+          </div>
+          <input
+            placeholder="API Key"
+            type="password"
+            value={form.api_key}
+            onChange={(e) => setForm({ ...form, api_key: e.target.value })}
+            className="w-full px-3 py-2 rounded-lg bg-background border border-border text-sm outline-none focus:border-primary"
+          />
+          <input
+            placeholder="Base URL (optional)"
+            value={form.base_url}
+            onChange={(e) => setForm({ ...form, base_url: e.target.value })}
+            className="w-full px-3 py-2 rounded-lg bg-background border border-border text-sm outline-none focus:border-primary"
+          />
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm hover:bg-primary/90 disabled:opacity-50"
+          >
+            <Save size={14} /> Save
+          </button>
+        </div>
+      )}
+
+      <div className="space-y-2">
+        {keys.map((key) => (
+          <div key={key.id} className="flex items-center justify-between p-4 bg-card border border-border rounded-xl">
+            <div>
+              <div className="font-medium">{key.provider_name}</div>
+              <div className="text-sm text-muted-foreground">{key.api_key_encrypted}</div>
+              {key.base_url && <div className="text-xs text-muted-foreground mt-1">{key.base_url}</div>}
+            </div>
+            <button
+              onClick={() => handleDelete(key.id)}
+              className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+        ))}
+        {keys.length === 0 && (
+          <div className="text-center text-muted-foreground py-8">No API keys configured</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ============ Models Panel ============
+function ModelsPanel() {
+  const [models, setModels] = useState<ModelConfig[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({
+    model_id: '', display_name: '', provider: 'coze', description: '',
+    default_temperature: '0.7', default_max_tokens: 4096, sort_order: 0,
+  });
+  const [loading, setLoading] = useState(false);
+
+  const fetchModels = useCallback(async () => {
+    const res = await fetch('/api/models');
+    const data = await res.json();
+    if (data.data) setModels(data.data);
+  }, []);
+
+  useEffect(() => { fetchModels(); }, [fetchModels]);
+
+  const handleSubmit = async () => {
+    if (!form.model_id || !form.display_name) return;
+    setLoading(true);
+    try {
+      await fetch('/api/models', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, is_enabled: true }),
+      });
+      setForm({ model_id: '', display_name: '', provider: 'coze', description: '', default_temperature: '0.7', default_max_tokens: 4096, sort_order: 0 });
+      setShowForm(false);
+      await fetchModels();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    await fetch(`/api/models?id=${id}`, { method: 'DELETE' });
+    await fetchModels();
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold">Model Configuration</h2>
+        <div className="flex gap-2">
+          <button
+            onClick={fetchModels}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border text-sm hover:bg-accent"
+          >
+            <RefreshCw size={14} /> Refresh
+          </button>
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm hover:bg-primary/90"
+          >
+            <Plus size={14} /> Add Model
+          </button>
+        </div>
+      </div>
+
+      {showForm && (
+        <div className="bg-card border border-border rounded-xl p-4 mb-4 space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <input
+              placeholder="Model ID"
+              value={form.model_id}
+              onChange={(e) => setForm({ ...form, model_id: e.target.value })}
+              className="px-3 py-2 rounded-lg bg-background border border-border text-sm outline-none focus:border-primary"
+            />
+            <input
+              placeholder="Display Name"
+              value={form.display_name}
+              onChange={(e) => setForm({ ...form, display_name: e.target.value })}
+              className="px-3 py-2 rounded-lg bg-background border border-border text-sm outline-none focus:border-primary"
+            />
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <input
+              placeholder="Provider"
+              value={form.provider}
+              onChange={(e) => setForm({ ...form, provider: e.target.value })}
+              className="px-3 py-2 rounded-lg bg-background border border-border text-sm outline-none focus:border-primary"
+            />
+            <input
+              placeholder="Temperature"
+              type="number"
+              step="0.1"
+              value={form.default_temperature}
+              onChange={(e) => setForm({ ...form, default_temperature: e.target.value })}
+              className="px-3 py-2 rounded-lg bg-background border border-border text-sm outline-none focus:border-primary"
+            />
+            <input
+              placeholder="Max Tokens"
+              type="number"
+              value={form.default_max_tokens}
+              onChange={(e) => setForm({ ...form, default_max_tokens: Number(e.target.value) })}
+              className="px-3 py-2 rounded-lg bg-background border border-border text-sm outline-none focus:border-primary"
+            />
+          </div>
+          <input
+            placeholder="Description"
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            className="w-full px-3 py-2 rounded-lg bg-background border border-border text-sm outline-none focus:border-primary"
+          />
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm hover:bg-primary/90 disabled:opacity-50"
+          >
+            <Save size={14} /> Save
+          </button>
+        </div>
+      )}
+
+      <div className="space-y-2">
+        {models.map((model) => (
+          <div key={model.id} className="flex items-center justify-between p-4 bg-card border border-border rounded-xl">
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <span className="font-medium">{model.display_name}</span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{model.provider}</span>
+                {model.is_enabled ? (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/10 text-green-500">Active</span>
+                ) : (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/10 text-red-500">Disabled</span>
+                )}
+              </div>
+              <div className="text-sm text-muted-foreground mt-1">{model.model_id}</div>
+              {model.description && <div className="text-xs text-muted-foreground mt-1">{model.description}</div>}
+            </div>
+            <button
+              onClick={() => handleDelete(model.id)}
+              className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ============ Conversations Panel ============
+function ConversationsPanel() {
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<{ role: string; content: string; created_at: string }[]>([]);
+
+  const fetchConversations = useCallback(async () => {
+    const res = await fetch('/api/conversations');
+    const data = await res.json();
+    if (data.data) setConversations(data.data);
+  }, []);
+
+  useEffect(() => { fetchConversations(); }, [fetchConversations]);
+
+  const loadMessages = async (id: string) => {
+    if (expandedId === id) {
+      setExpandedId(null);
+      return;
+    }
+    setExpandedId(id);
+    const res = await fetch(`/api/conversations/${id}`);
+    const data = await res.json();
+    if (data.data) setMessages(data.data.messages || []);
+  };
+
+  const handleDelete = async (id: string) => {
+    await fetch(`/api/conversations/${id}`, { method: 'DELETE' });
+    await fetchConversations();
+    if (expandedId === id) {
+      setExpandedId(null);
+      setMessages([]);
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold">Conversation History</h2>
+        <button
+          onClick={fetchConversations}
+          className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border text-sm hover:bg-accent"
+        >
+          <RefreshCw size={14} /> Refresh
+        </button>
+      </div>
+
+      <div className="space-y-2">
+        {conversations.map((conv) => (
+          <div key={conv.id} className="bg-card border border-border rounded-xl overflow-hidden">
+            <div
+              className="flex items-center justify-between p-4 cursor-pointer hover:bg-accent/50 transition-colors"
+              onClick={() => loadMessages(conv.id)}
+            >
+              <div>
+                <div className="font-medium">{conv.title}</div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  {conv.model_id} - {new Date(conv.created_at).toLocaleString()}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">{expandedId === conv.id ? 'Collapse' : 'Expand'}</span>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleDelete(conv.id); }}
+                  className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            </div>
+            {expandedId === conv.id && (
+              <div className="border-t border-border p-4 space-y-3 max-h-96 overflow-y-auto">
+                {messages.map((msg, i) => (
+                  <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[80%] rounded-xl px-3 py-2 text-sm ${
+                      msg.role === 'user'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted'
+                    }`}>
+                      <div className="text-xs opacity-70 mb-1">{msg.role}</div>
+                      <p className="whitespace-pre-wrap">{msg.content.slice(0, 500)}{msg.content.length > 500 ? '...' : ''}</p>
+                    </div>
+                  </div>
+                ))}
+                {messages.length === 0 && (
+                  <div className="text-center text-muted-foreground text-sm py-4">No messages</div>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
+        {conversations.length === 0 && (
+          <div className="text-center text-muted-foreground py-8">No conversations yet</div>
+        )}
+      </div>
+    </div>
+  );
+}
