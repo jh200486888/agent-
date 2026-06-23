@@ -22,8 +22,8 @@ async function getProviderConfig(modelId: string): Promise<ProviderConfig | null
     throw new Error(`请先在后台配置 ${provider} 的 API Key`);
   }
 
-  // 解密 API Key（简单处理，实际应该使用加密）
-  const apiKey = apiKeyData.api_key_encrypted;
+  // 解密 API Key（Base64 解码）
+  const apiKey = Buffer.from(apiKeyData.api_key_encrypted, 'base64').toString('utf-8');
   
   // 根据 provider 返回配置
   const providerConfigs: Record<string, { baseUrl: string }> = {
